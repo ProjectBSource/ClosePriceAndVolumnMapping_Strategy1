@@ -1,4 +1,6 @@
 import csv
+import math
+
 
 dates = []
 close_prices = []
@@ -42,14 +44,17 @@ def read_csv_file(file_path):
     #print("Volumes:", volumes)
     #print("Percentage Changes:", percentage_changes)
     
-def calculateEachClosePriceSumupVolumn():
+def calculateEachClosePriceSumupVolumn(range):
     min_close_price = int(min(close_prices))
     max_close_price = int(max(close_prices))
-    close_price_list = list(range(min_close_price, max_close_price+1))
+    arraySize = math.ceil((max_close_price-min_close_price)/range)
+    close_price_list = [0] * arraySize
     for i in range(0, len(dates), 1):
         tempVolumns = volumes[i].replace("K", "")
         if(tempVolumns != None and tempVolumns != ""):
-            close_price_list[ int(close_prices[i]) - min_close_price ] += float(volumes[i].replace("K", ""))*1000;
+            tempVolumns = float(volumes[i].replace("K", ""))*1000
+            arrayPosition = math.floor( int(close_prices[i] - min_close_price) / range)
+            close_price_list[ arrayPosition ] += tempVolumns
     with open(outputFile, 'w') as file:
         for i in range(len(close_price_list)-1, 0, -1):
             file.write("\"{a}\",\"{b}\"\n".format(a = str(min_close_price+i), b = str(close_price_list[i])))
@@ -59,4 +64,4 @@ def calculateEachClosePriceSumupVolumn():
 
 # Example usage
 read_csv_file(csv_file_path)
-calculateEachClosePriceSumupVolumn();
+calculateEachClosePriceSumupVolumn(1);
