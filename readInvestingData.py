@@ -12,7 +12,7 @@ lows = []
 volumes = []
 percentage_changes = []
 
-csv_file_path = './DowJonesHistorialData.csv'
+csv_file_path = './DowJonesHistorialData(20200101-20230816).csv'
 
 def read_csv_file(file_path):
     with open(file_path, 'r') as file:
@@ -73,7 +73,7 @@ def calculateZscore(data):
     mean = mean / len(data)
     
     #setup standard_deviation
-    standard_deviation = 0.1
+    standard_deviation = 2
     
     outputFile  = './outputFile(calculateZscore).csv'
     with open(outputFile, 'w') as file:
@@ -85,5 +85,5 @@ def calculateZscore(data):
 
 # Example usage
 read_csv_file(csv_file_path)
-result1 = calculateEachIntervalePriceSumupVolumn(10);
+result1 = calculateEachIntervalePriceSumupVolumn(200);
 result2 = calculateZscore(result1);
