@@ -1,8 +1,8 @@
 <?php
-$servername = "mysql.hostinger.com.hk";
-$username = "u628315660_projectB";
-$password = "wtfWTF0506536";
-$dbname = "u628315660_projectB";
+$servername = "?";
+$username = "?";
+$password = "?";
+$dbname = "?";
 
 // Create a connection
 $conn = new mysqli($servername, $username, $password, $dbname);
