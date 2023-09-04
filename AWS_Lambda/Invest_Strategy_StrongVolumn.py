@@ -18,12 +18,13 @@ marketData = []
 holding = []
 
 class Holding:
-  def __init__(self, id, symbol, quality, stopProfitsPosition, stopLostPosition):
+  def __init__(self, id, symbol, quality, stopProfitsPosition, stopLostPosition, keyPosition):
     self.id = id
     self.symbol = symbol
     self.quality = quality
     self.stopProfitsPosition = stopProfitsPosition
     self.stopLostPosition = stopLostPosition
+    self.keyPosition = keyPosition
 
 def lambda_handler(event, context):
     symbol = []
@@ -35,6 +36,8 @@ def lambda_handler(event, context):
     print("positions:"+str(positions))
     get_Holding(holding)
     print("holding:"+str(holding))
+    update_Holding(holding, symbol, positions)
+    print("updated holding:"+str(holding))
     check_Market(symbol, marketData)
     print("marketData:"+str(marketData))
     check_Holding(symbol, holding, marketData)
@@ -58,13 +61,42 @@ def get_Latest_Strong_Volumn_Position(symbol, positions):
 def get_Holding(holding):
     mydb=mysql.connector.connect(host="151.106.124.51", user="u628315660_projectB", password="wtfWTF0506536", database="u628315660_projectB")
     mycursor = mydb.cursor()
-    sql = " SELECT id, symbol, quality, stopProfitsPosition, stopLostPosition FROM patrick_strategy_StrongVolumn_OrderMapping WHERE status=0 "
+    sql = " SELECT id, symbol, quality, stopProfitsPosition, stopLostPosition, keyPosition FROM patrick_strategy_StrongVolumn_OrderMapping WHERE status=0 "
     mycursor.execute(sql)
     result = mycursor.fetchall()
     for data in result:
-        h = Holding(data[0], data[1], data[2], data[3], data[4])
+        h = Holding(data[0], data[1], data[2], data[3], data[4], data[5])
         holding.append(h)
         
+        
+def update_Holding(holding, symbol, positions):
+    for h in holding:
+        _position = positions[ symbol.index(h.symbol) ]
+        for x in range(len(_position)):
+            p = _position[x]
+            if(int(p)==int(h.keyPosition)):
+                if(h.quality>0):
+                    if(int(h.stopLostPosition)!=int(p)):
+                        stopProfitsPosition = int(p)
+                        stopLostPosition = ( int(_position[x-1]) - ((int(_position[x-1])-int(p))/4) )
+                        mydb=mysql.connector.connect(host="151.106.124.51", user="u628315660_projectB", password="wtfWTF0506536", database="u628315660_projectB")
+                        mycursor = mydb.cursor()
+                        sql = " UPDATE patrick_strategy_StrongVolumn_OrderMapping set stopLostPosition="+str(stopProfitsPosition)+", stopProfitsPosition="+str(stopLostPosition)+" WHERE id='"+h.id+"' "
+                        mycursor.execute(sql)
+                        mydb.commit()
+                        get_Holding(holding)
+                if(h.quality<0):
+                    if(int(h.stopLostPosition)!=int(p)):
+                        stopProfitsPosition = int(p)
+                        stopLostPosition = ( int(_position[x-1]) - ((int(p)-int(_position[x-1]))/4) )
+                        mydb=mysql.connector.connect(host="151.106.124.51", user="u628315660_projectB", password="wtfWTF0506536", database="u628315660_projectB")
+                        mycursor = mydb.cursor()
+                        sql = " UPDATE patrick_strategy_StrongVolumn_OrderMapping set stopLostPosition="+str(stopProfitsPosition)+", stopProfitsPosition="+str(stopLostPosition)+" WHERE id='"+h.id+"' "
+                        mycursor.execute(sql)
+                        mydb.commit()
+                        get_Holding(holding)
+                        
+                        
 
 def check_Holding(symbol, holding, marketData):
     for h in holding:
